@@ -3,10 +3,14 @@ import Head from "next/head";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Button, Hero, Alert, Navbar, Dropdown, Input } from "react-daisyui";
+import SozlukNavbar from "../components/navbar";
 import Lock from "../src/artifacts/contracts/Lock.sol/Lock.json";
 import { ethers } from "hardhat";
 import Web3 from "web3";
 import default_img from "../user.png";
+
+// Components
+import Dashboard from "../components/dashboard";
 
 const lockContract = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // Lock Smart Contract Address.
 
@@ -39,7 +43,7 @@ const Home: NextPage = () => {
     accountName: [""],
     chainId: 0,
   });
-  //const [web3, setWeb3] = useState<Web3 | undefined>();
+  //const [web3, setWeb3] = useState<Web3 | undefined>(); // Probably won't use it.
 
   async function checkAndConnectToMetamask() {
     if (checkMetamaskExtension()) {
@@ -105,7 +109,12 @@ const Home: NextPage = () => {
   };
 
   const navbar = (
-    <Navbar color="blue" className="justify-end items-center gap-x-12 pr-8">
+    <Navbar color="blue" className=" items-center gap-x-12 pr-8">
+      <Navbar.Start>
+        <a href=""><h1 className="font-bold  text-xl ">Sansürsüz Sözlük</h1></a>
+      </Navbar.Start>
+      <Navbar.End>
+        <p className="italic mx-7">{accounts.accountName}</p>
       <Dropdown vertical="middle" horizontal="left">
         <Image
           className="rounded-full  bg-white"
@@ -115,16 +124,10 @@ const Home: NextPage = () => {
           height={34}
         ></Image>
         <Dropdown.Menu className="p-6">
-          <div>
-            <p className="font-bold">Adresiniz</p>
-            <p className="italic">{accounts.accountName}</p>
-          </div>
-          <div>
-            <p className="font-bold">Zincir Numarası</p>
-            <p className="italic">{accounts.chainId}</p>
-          </div>
+           <p className="font-bold">Kullanıcı#1</p>
         </Dropdown.Menu>
       </Dropdown>
+      </Navbar.End>
     </Navbar>
   );
   useEffect(() => {
@@ -139,11 +142,8 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        {(() => {
-          if (accounts.chainId > 0) {
-            return navbar;
-          }
-        })()}
+      <SozlukNavbar accountAddress={accounts.accountName} accountChainId={undefined}/>
+        <Dashboard />
         <Hero className="h-screen">
           <Hero.Overlay className="bg-opacity-50" />
           <Hero.Content className="text-center">
@@ -169,15 +169,7 @@ const Home: NextPage = () => {
                       Meta Mask ile Giriş Yap
                     </Button>
                   );
-                } else {
-                  return (
-                    <Input
-                      className="w-full my-5"
-                      placeholder="Konu Ara!"
-                    ></Input>
-                  );
-                }
-              })()}
+                }})()}
               {alertField}
             </div>
           </Hero.Content>
