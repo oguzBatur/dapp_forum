@@ -1,8 +1,8 @@
-# Sample Hardhat Project
+# Akbank Web3 Practicum Final Case
+# Forum blockchain clone
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+This project if for the Akbank Web3 Practicum. it is a simple forum like ekşisözlük. It is built into the blockchain.
 
-Try running some of the following tasks:
 
 ```shell
 npx hardhat help
