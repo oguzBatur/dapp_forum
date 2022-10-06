@@ -1,32 +1,45 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import Web3 from "web3";
 import SozlukNavbar from "../components/navbar";
+import Dashboard from "../components/dashboard";
+import { getAccountInfo } from "../functions";
+import { SozlukError } from "../types/enums";
+import { IAccount } from "../types/interfaces";
 
 const Topic = () => {
     
-    const [account, setAccount] = useState([""]);
-
-
-    async function fetchAccountDetails() {
-        const web3 = new Web3(window.ethereum);
-        const account = await web3.eth.getAccounts();
-        setAccount(account);
-    }
     
-    useEffect(() => {
-        fetchAccountDetails();
+    const [account, setAccount] = useState<IAccount>({
+        address: "",
+        balance: "",
+        chainId: 0,
+    });
+    
+    async function getAccount() {
+        
+        const account = await getAccountInfo();
+        if(account === SozlukError.NoAccount){
+            console.error("No account!");
+        }
+        else {
+            setAccount(account);
+        }
 
-    }, [])
+    }
+
+    useEffect(() => {
+        getAccount()
+    }, )
 
     
     const router = useRouter();
     const {pid} = router.query;
     return(
         <main>
-            <SozlukNavbar accountAddress={account} accountChainId={undefined} />
+            <SozlukNavbar address={account.address} balance={account.balance} chainId={account.chainId} />
+            <Dashboard />
             <h1 className="text-center font-bold text-xl mt-5">{pid}</h1>
- 
+
         </main>
     )
 

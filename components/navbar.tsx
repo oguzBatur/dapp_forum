@@ -1,10 +1,10 @@
 import { NextPage } from "next";
-import { Navbar } from "react-daisyui";
+import { Navbar, Badge } from "react-daisyui";
 import Link from "next/link";
-import { AccountDetails } from "../types/interfaces";
+import { IAccount } from "../types/interfaces";
 import { BsClipboard } from "react-icons/bs";
 
-const SozlukNavbar: NextPage<AccountDetails> = ({
+const SozlukNavbar: NextPage<IAccount> = ({
   address,
   balance,
   chainId,
@@ -23,7 +23,7 @@ const SozlukNavbar: NextPage<AccountDetails> = ({
           </h1>
         </Link>
       </Navbar.Start>
-      <Navbar.End>
+      <Navbar.Center>
         <div className="mx-5  p-0 flex items-center">
           <h3 className="italic mx-7 text-first">
             {address ? `Hesap: ${address}` : ""}{" "}
@@ -37,6 +37,13 @@ const SozlukNavbar: NextPage<AccountDetails> = ({
         <span title={balance || ""} className="italic mx-7  text-first">
           {balance ? `ETH Bakiye: ${balance.slice(0, 4)}... ` : ""}
         </span>
+      </Navbar.Center>
+      <Navbar.End>
+        <Link href={"/gonderi/gonderi_olustur"}>
+        <Badge className=" ml-20 cursor-pointer px-10 py-5 bg-first font-bold text-third">
+          Yeni Entry Oluştur
+        </Badge>
+        </Link>
       </Navbar.End>
     </Navbar>
   );

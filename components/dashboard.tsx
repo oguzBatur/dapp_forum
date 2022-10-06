@@ -17,7 +17,7 @@ const Dashboard = () => {
     return placeHolderTopics.map((val, ind) => {
       return (
         <Menu.Item className="w-full" key={ind.toString()}>
-          <Link href={val}>
+          <Link href={`/${val}`}>
             <p
               title={val}
               className="overflow-ellipsis text-first overflow-hidden inline-block  w-full whitespace-nowrap"

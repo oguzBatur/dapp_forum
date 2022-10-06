@@ -6,7 +6,7 @@ import { Button, Hero, Alert, Navbar, Dropdown, Input } from "react-daisyui";
 import SozlukNavbar from "../components/navbar";
 import Web3 from "web3";
 import default_img from "../user.png";
-import { AccountDetails } from "../types/interfaces";
+import { IAccount } from "../types/interfaces";
 import { Alerts, SozlukError } from "../types/enums";
 
 // Components
@@ -29,7 +29,7 @@ const Home: NextPage = () => {
     else return false;
   };
 
-  const [account, setAccount] = useState<AccountDetails>({
+  const [account, setAccount] = useState<IAccount>({
     address: undefined,
     balance: undefined,
     chainId: undefined,
