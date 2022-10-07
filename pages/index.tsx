@@ -1,19 +1,14 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import Image from "next/image";
 import { useEffect, useState } from "react";
-import { Button, Hero, Alert, Navbar, Dropdown, Input } from "react-daisyui";
+import { Button, Hero, Alert } from "react-daisyui";
 import SozlukNavbar from "../components/navbar";
-import Web3 from "web3";
-import default_img from "../user.png";
 import { IAccount } from "../types/interfaces";
 import { Alerts, SozlukError } from "../types/enums";
 
 // Components
 import Dashboard from "../components/dashboard";
-import { getAccountInfo } from "../functions";
-
-const lockContract = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // Lock Smart Contract Address.
+import { getAccountInfoFromMetamask, sozlukLogger } from "../functions";
 
 const Home: NextPage = () => {
   // Alert field to inform users about actions.
@@ -42,13 +37,9 @@ const Home: NextPage = () => {
       await window.ethereum.request?.({
         method: "eth_requestAccounts",
       });
-      const account = await getAccountInfo();
-      if (account === SozlukError.NoAccount) {
-        console.error("Can't fetch account");
-      } else {
-        setAccount({ ...account });
-        setAlerts(Alerts.Connected);
-      }
+      const account = await getAccountInfoFromMetamask();
+      // Perform switch case for enum types. default means that this is not an enum and it should be treated as a type.
+      const accountRes = sozlukLogger(account) as IAccount;
     } else {
       // If there is no Metamask installed, set alert accordingly.
       setAlerts(Alerts.NoMetaMask);
@@ -61,7 +52,8 @@ const Home: NextPage = () => {
       case Alerts.Connected: {
         setAlertField(
           <Alert status="info" className="text-sm w-full">
-            Hoşgeldin {account!.address}!
+            {"Hoşgeldin"} {account!.address}
+            {"!"}
           </Alert>
         );
 
@@ -70,14 +62,14 @@ const Home: NextPage = () => {
       case Alerts.NoMetaMask: {
         setAlertField(
           <Alert status="warning" className="text-sm w-full">
-            Metamask yüklü değil.
+            {"Metamask yüklü değil."}
             <a
               className="text-blue-900 underline"
               href="https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn"
               target={"_blank"}
               rel="noreferrer"
             >
-              Buraya tıklayarak indirebilirsiniz.
+              {"Buraya tıklayarak indirebilirsiniz."}
             </a>
           </Alert>
         );
@@ -86,7 +78,7 @@ const Home: NextPage = () => {
       case Alerts.MetaMask: {
         setAlertField(
           <Alert status="info" className="text-sm w-full">
-            Metamask yüklü. Yukarıdaki tuşa basarak giriş yapabilirsiniz.
+            {"Metamask yüklü. Yukarıdaki tuşa basarak giriş yapabilirsiniz."}
           </Alert>
         );
         break;
@@ -120,16 +112,17 @@ const Home: NextPage = () => {
           <Hero.Content className="text-center">
             <div className="max-w-md">
               <h1 className="text-5xl text-first font-bold text-white">
-                Sansürsüz Sözlük
+                {"Sansürsüz Sözlük"}
               </h1>
               <p className="mt-2 text-third">
-                Block Zinciri Teknolojisi ile üretilmiş, kontrol edilmeyen,
+                {"Block Zinciri Teknolojisi ile üretilmiş, kontrol edilmeyen,"}
                 <strong className="text-lg text-first">
-                  <i> sansürsüz sözlük.</i>
+                  <i> {"sansürsüz sözlük."}</i>
                 </strong>
               </p>
               {(() => {
-                if (account) {
+                if (!account.address) {
+                  // If address is undefined, return <Button/>.
                   return (
                     <Button
                       onClick={checkAndConnectToMetamask}
@@ -137,7 +130,7 @@ const Home: NextPage = () => {
                       className="m-5"
                       size="md"
                     >
-                      Meta Mask ile Giriş Yap
+                      {"Meta Mask ile Giriş Yap"}
                     </Button>
                   );
                 }

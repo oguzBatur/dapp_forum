@@ -4,13 +4,33 @@ export interface IAccount {
     balance: string | undefined;
 }
 
-export interface IForumDetails {
+export interface IContractDetails {
     address: string;
-    json: AbiItem;
+    json: any;
 }
 
+// general structure of a Post
 export interface IPost {
-
+    id: number;
+    title: string;
+    description: string;
+    votes: number;
+    creationTime: number;
+    author: string;
 }
 
+export interface IPostArray {
+    posts: IPost[]
+}
 
+// general structure of a comment.
+export interface IComment {
+    id: number;
+    comment: string;
+    creationTime: number;
+    author: string;
+}
+
+export interface ICommentArray {
+    comments: IComment[]
+}

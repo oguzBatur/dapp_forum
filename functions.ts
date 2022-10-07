@@ -1,7 +1,8 @@
+import { ethers } from "hardhat";
 import { Contract } from "hardhat/internal/hardhat-network/stack-traces/model";
 import Web3 from "web3";
-import { ForumContract } from "./contractaddresses";
-import { Alerts, SozlukError } from "./types/enums";
+import { ForumContract } from "./addresses";
+import {  SozlukError } from "./types/enums";
 import { IAccount } from "./types/interfaces";
 
 export function checkMetamask() {
@@ -9,7 +10,12 @@ export function checkMetamask() {
     else return false;
 }
 
-export async function getAccountInfo(): Promise<IAccount | SozlukError> {
+export function getDefaultProvider() {
+    return new ethers.providers.Web3Provider(window.ethereum);
+}
+
+
+export async function getAccountInfoFromMetamask(): Promise<IAccount | SozlukError> {
     try {
         const web3 = new Web3(Web3.givenProvider);
         const accounts = await web3.eth.getAccounts();
@@ -26,19 +32,41 @@ export async function getAccountInfo(): Promise<IAccount | SozlukError> {
     }
 }
 
-export async function getForumContract(){
-    const web3 = new Web3(Web3.givenProvider);
-    const contract = new web3.eth.Contract(ForumContract.json, ForumContract.address);
-    return contract;
+// Create a post with the smart contract.
+export async function createPost(title: string, description: string) {
+    const provider = getDefaultProvider();
     
-}
-
-// Create a post with the contract.
-export async function createPost(contract: Contract) {
-    
+    const abi = [
+        "function createPost(string memory _title, string memory _description) external"
+    ]
+    const contract = new ethers.Contract(ForumContract.address, abi, );
+    contract
 }
 
 // Comment on a post with the given post id.
 export async function commentOnPost(contract: Contract, postId: number) {
 
+}
+
+/**
+ * @description This function determines if the given value is an error value.
+ * @param value This can be a SozlukError or anything else. if the value contains SozlukError, this function will console.error the message. 
+ * @returns If this value does not contain any error codes, it will return the value with a console.log message for testing.
+ */
+export function sozlukLogger(value: any): any {
+    switch(value) {
+        case SozlukError.AccountNotRequested: {
+            console.error(value);
+            break;
+        }
+        case SozlukError.NoAccount: {
+            console.error(value);
+            break;
+        }
+        default: {
+            console.log("Sözlük Hatası Bulunamadı.");
+            break;
+        }
+    }
+    return value;
 }
