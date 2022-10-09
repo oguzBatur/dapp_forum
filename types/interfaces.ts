@@ -1,12 +1,16 @@
+import { BigNumber } from "ethers";
+
 export interface IAccount {
-    address: string | undefined;
-    chainId: number | undefined;
-    balance: string | undefined;
+    address: string;
+    chainId: number;
+    balance: BigNumber;
+
 }
 
 export interface IContractDetails {
     address: string;
     json: any;
+    abi: string[];
 }
 
 // general structure of a Post

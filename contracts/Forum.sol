@@ -80,10 +80,9 @@ contract Forum {
     function getPost(uint _postId) external view returns (Post memory) {
         return posts[_postId];
     }
-    
 
     // Get post count. use this to fetch posts.
-    function getPostCount() external view returns(uint256) {
-        return postCount;
+    function getPostCount() external view returns (uint256) {
+        return postCount; // will be used as the postid.
     }
 }

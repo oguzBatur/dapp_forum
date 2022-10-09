@@ -1,6 +1,7 @@
-import { ReactComponentElement, useState } from "react";
+import { ReactComponentElement, useState, useEffect } from "react";
 import Link from "next/link";
 import { Menu } from "react-daisyui";
+import { getPost } from "../functions";
 
 const Dashboard = () => {
   const placeHolderTopics = [
@@ -13,11 +14,20 @@ const Dashboard = () => {
     "çok önemli birkaç şey daha olmuş gibi",
   ];
 
+  const [posts, setPosts] = useState([""]);
+
+  useEffect(() => {
+    getPost(0).then((val) => {
+      console.log(val);
+      setPosts([...posts, val[1]]);
+    });
+  }, []);
+
   function mapTopics() {
-    return placeHolderTopics.map((val, ind) => {
+    return posts.map((val, ind) => {
       return (
         <Menu.Item className="w-full" key={ind.toString()}>
-          <Link href={`/${val}`}>
+          <Link href={`/${val}`} id="">
             <p
               title={val}
               className="overflow-ellipsis text-first overflow-hidden inline-block  w-full whitespace-nowrap"

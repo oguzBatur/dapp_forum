@@ -1,65 +1,26 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import { useEffect, useState } from "react";
-import { Button, Hero, Alert } from "react-daisyui";
+import { useState } from "react";
+import { Hero, Alert, Button } from "react-daisyui";
 import SozlukNavbar from "../components/navbar";
 import { IAccount } from "../types/interfaces";
-import { Alerts, SozlukError } from "../types/enums";
-
+import { EAlerts } from "../types/enums";
+import { ethers } from "ethers";
 // Components
 import Dashboard from "../components/dashboard";
-import { getAccountInfoFromMetamask, sozlukLogger } from "../functions";
 
 const Home: NextPage = () => {
   // Alert field to inform users about actions.
   const [alertField, setAlertField] = useState(
     <Alert className="w-full" status={"info"}>
-      Block zincirine Bağlanılınıyor...
+      Hoşgeldiniz, lütfen Metamask ile giriş yapın.
     </Alert>
   );
 
-  // Check if metamask extension is installed.
-  const checkMetamaskExtension = () => {
-    if (window.ethereum) return true;
-    else return false;
-  };
-
-  const [account, setAccount] = useState<IAccount>({
-    address: undefined,
-    balance: undefined,
-    chainId: undefined,
-  });
-  //const [web3, setWeb3] = useState<Web3 | undefined>(); // Probably won't use it.
-
-  async function checkAndConnectToMetamask() {
-    if (checkMetamaskExtension()) {
-      // Get Account Info.
-      await window.ethereum.request?.({
-        method: "eth_requestAccounts",
-      });
-      const account = await getAccountInfoFromMetamask();
-      // Perform switch case for enum types. default means that this is not an enum and it should be treated as a type.
-      const accountRes = sozlukLogger(account) as IAccount;
-    } else {
-      // If there is no Metamask installed, set alert accordingly.
-      setAlerts(Alerts.NoMetaMask);
-    }
-  }
-
   // Sets alert field proporties.
-  const setAlerts = (alertType: Alerts) => {
+  const setAlerts = (alertType: EAlerts) => {
     switch (alertType) {
-      case Alerts.Connected: {
-        setAlertField(
-          <Alert status="info" className="text-sm w-full">
-            {"Hoşgeldin"} {account!.address}
-            {"!"}
-          </Alert>
-        );
-
-        break;
-      }
-      case Alerts.NoMetaMask: {
+      case EAlerts.NoMetaMask: {
         setAlertField(
           <Alert status="warning" className="text-sm w-full">
             {"Metamask yüklü değil."}
@@ -75,7 +36,7 @@ const Home: NextPage = () => {
         );
         break;
       }
-      case Alerts.MetaMask: {
+      case EAlerts.MetaMask: {
         setAlertField(
           <Alert status="info" className="text-sm w-full">
             {"Metamask yüklü. Yukarıdaki tuşa basarak giriş yapabilirsiniz."}
@@ -84,14 +45,7 @@ const Home: NextPage = () => {
         break;
       }
     }
-    if (checkMetamaskExtension()) {
-    } else {
-    }
   };
-
-  useEffect(() => {
-    checkAndConnectToMetamask();
-  });
 
   return (
     <div>
@@ -101,40 +55,13 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="bg-third">
-        <SozlukNavbar
-          address={account.address}
-          balance={account.balance}
-          chainId={account.chainId}
-        />
-        <Dashboard />
-        <Hero className="h-screen">
-          <Hero.Overlay className="bg-opacity-50" />
-          <Hero.Content className="text-center">
-            <div className="max-w-md">
-              <h1 className="text-5xl text-first font-bold text-white">
+        <Hero className="h-screen pl-44  overflow-hidden">
+          <Hero.Overlay />
+          <Hero.Content>
+            <div>
+              <h1 className="text-5xl my-5 text-first font-bold text-white">
                 {"Sansürsüz Sözlük"}
               </h1>
-              <p className="mt-2 text-third">
-                {"Block Zinciri Teknolojisi ile üretilmiş, kontrol edilmeyen,"}
-                <strong className="text-lg text-first">
-                  <i> {"sansürsüz sözlük."}</i>
-                </strong>
-              </p>
-              {(() => {
-                if (!account.address) {
-                  // If address is undefined, return <Button/>.
-                  return (
-                    <Button
-                      onClick={checkAndConnectToMetamask}
-                      color="primary"
-                      className="m-5"
-                      size="md"
-                    >
-                      {"Meta Mask ile Giriş Yap"}
-                    </Button>
-                  );
-                }
-              })()}
               {alertField}
             </div>
           </Hero.Content>
