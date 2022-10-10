@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import { ForumContract } from "./constants";
 import { ethereum } from "./global";
 import {  ESozlukError } from "./types/enums";
@@ -50,6 +50,16 @@ export async function createPost(title: string, description: string) {
     
 }
 
+export async function getPostCount() {
+    
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner()
+    
+    const contract = new ethers.Contract(ForumContract.address, ForumContract.json.abi, signer);
+    const postCount = ethers.utils.formatUnits(await contract.getPostCount(), 0) ;
+    return postCount;
+    
+}
 export async function getPost(postId: number) {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner()
