@@ -1,56 +1,72 @@
-import { ReactComponentElement, useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo, useContext } from "react";
 import Link from "next/link";
-import { Menu } from "react-daisyui";
 import { getPost, getPostCount } from "../functions";
-import { IPost, IPostArray } from "../types/interfaces";
+import { IPost } from "../types/interfaces";
+import List from "./ListItem";
+import { UserContext } from "../UserContext";
 
 const Dashboard = () => {
   const [posts, setPosts] = useState<IPost[]>([]);
 
-  useEffect(() => {
-    getPostCount().then((count) => {
-      console.log(Number(count));
-      for (let i = 0; i < Number(count); i++) {
-        getPost(i).then((val) => {
-          const _val = val as IPost;
-          console.log(_val.title);
+  const getPosts = useCallback(
+    (val: any, count: Number) => {
+      const _val = val as IPost;
 
-          setPosts([
-            ...posts,
-            {
-              author: _val.author,
-              creationTime: _val.creationTime,
-              description: _val.description,
-              id: _val.id,
-              title: _val.title,
-              votes: _val.votes,
-            },
-          ]);
-        });
+      if (posts.length <= count) {
+        setPosts((posts) =>
+          posts.concat({
+            author: _val.author,
+            creationTime: _val.creationTime,
+            description: _val.description,
+            id: _val.id,
+            title: _val.title,
+            votes: _val.votes,
+          })
+        );
+      }
+    },
+    [posts.length]
+  );
+
+  const getPostsWithPostCount = useCallback(() => {
+    getPostCount().then((count) => {
+      for (let i = 0; i < Number(count); i++) {
+        getPost(i)
+          .then((val) => getPosts(val, Number(count)))
+          .catch((err) => console.error("GetPostError: ", err));
       }
     });
-  }, []);
+  }, [getPosts]);
+
+  useEffect(() => {
+    console.log("Dashboard Fired Up");
+    getPostsWithPostCount();
+  });
 
   function mapTopics() {
-    console.log("Size of posts: ", posts);
     return posts.map((val, ind) => {
-      if (ind < 21) {
+      if (ind < posts.length / 2) {
         return (
-          <Menu.Item className="w-full" key={ind.toString()}>
+          <List key={ind.toString()}>
             <Link href={`/${val.title}_${val.id}`} id="">
               <p
                 title={val.title}
-                className="overflow-ellipsis text-first overflow-hidden inline-block  w-full whitespace-nowrap"
+                className="overflow-ellipsis  overflow-hidden inline-block  w-full whitespace-nowrap"
               >
+                <button className=""></button>
                 {val.title}
               </p>
             </Link>
-          </Menu.Item>
+          </List>
         );
       }
     });
   }
-  return <Menu className="absolute bg-third h-screen w-64">{mapTopics()}</Menu>;
+  return (
+    <div className=" bg-second row-start-2 col-start-6 row-span-full ">
+      {mapTopics()}
+    </div>
+  );
 };
 
 export default Dashboard;

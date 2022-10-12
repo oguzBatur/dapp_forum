@@ -1,14 +1,19 @@
 import { NextPage } from "next";
-import { useState, useContext, useEffect } from "react";
-import { Navbar, Badge, Dropdown, Card } from "react-daisyui";
-import Link from "next/link";
-import { BsClipboard } from "react-icons/bs";
+import { useContext, useEffect, useCallback, useMemo } from "react";
 import { UserContext } from "../UserContext";
 import { IAccount } from "../types/interfaces";
+import {
+  checkLocalStorage,
+  getAccountFromMetamask,
+  getLocalStorage,
+  removeMetamaskListener,
+  setLocalStorage,
+} from "../functions";
+import { useRouter } from "next/router";
+import Button from "./Button";
+import { ethers } from "ethers";
 
-const SozlukNavbar: NextPage<{
-  connectToMeta: () => Promise<IAccount | undefined>;
-}> = ({ connectToMeta }) => {
+const SozlukNavbar: NextPage = () => {
   function copyAddrToClipboard() {
     if (userContext && userContext.user) {
       navigator.clipboard.writeText(userContext.user.address);
@@ -16,108 +21,132 @@ const SozlukNavbar: NextPage<{
   }
   const userContext = useContext(UserContext);
 
-  const [showElements, setShowElements] = useState(false);
+  const getAccountDetails = useCallback(async () => {
+    if (!checkLocalStorage()) {
+      console.log("No local storage");
+      const account = await getAccountFromMetamask();
+      setLocalStorage(account);
+      return account;
+    } else {
+      console.log("There is a local storage.");
+      const account: IAccount = JSON.parse(getLocalStorage() as string);
+      return account;
+    }
+  }, []);
 
   function checkMetamaskButton() {
     if (userContext && !userContext.user) {
       return (
-        <Badge
+        <Button
           onClick={() => {
-            connectToMeta().then((val) => {
-              if (val) {
-                userContext.setUser(val);
-              }
-            });
+            getAccountDetails()
+              .then((val) => {
+                if (val) {
+                  userContext.setUser(val);
+                }
+              })
+              .catch((err) => console.error("Metamask Button Error: ", err));
           }}
-          color="primary"
-          className=" ml-20 cursor-pointer px-5 py-5 font-bold "
+          className="col-start-5 text-sm h-22 bg-blue-900 row-start-2 hover:bg-third "
         >
-          Metamask İle Giriş Yap
-        </Badge>
+          <p>Metamask İle Giriş Yap</p>
+        </Button>
       );
     }
   }
 
-  useEffect(() => {
+  const checkAccountChange = useCallback(() => {
     window.ethereum.on("accountsChanged", (accounts: string[]) => {
       if (!accounts[0]) {
         userContext?.setUser(null);
       }
     });
-    if (userContext && userContext.user) {
-      userContext.setUser(userContext.user);
-    }
-  });
+  }, [userContext]);
+
+  useEffect(() => {
+    console.log("Navbar Fired Up");
+    checkAccountChange();
+    return () => {
+      removeMetamaskListener();
+    };
+  }, [checkAccountChange]);
 
   function newEntryButton() {
-    if (userContext && userContext.user) {
+    console.log(userContext.user?.address);
+    if (userContext.user) {
       return (
-        <Link href={"/gonderi/gonderi_olustur"}>
-          <Badge className=" ml-20 cursor-pointer px-10 py-5 bg-first font-bold text-third">
-            Yeni Entry Oluştur
-          </Badge>
-        </Link>
+        <Button
+          className="mr-2 col-start-6 row-start-2 h-22"
+          onClick={() => navigeTo("/gonderi/gonderi_olustur")}
+        >
+          <p>Yeni Entry Oluştur</p>
+        </Button>
       );
     } else
       return (
-        <Dropdown>
-          <Badge className="mx-3 cursor-pointer px-10 py-5 bg-first font-bold text-third">
-            Yeni Entry Oluştur
-          </Badge>
-          <Dropdown.Menu className="card compact rounded-box bg-third text-first">
-            <Card.Body>
-              <p>Entry girmeden önce giriş yapman gerekiyor!</p>
-            </Card.Body>
-          </Dropdown.Menu>
-        </Dropdown>
+        <Button className="mr-2 col-start-6 row-start-2 h-22">
+          <p>Yeni Entry Oluştur</p>
+        </Button>
       );
   }
 
-  function clipboardCheck() {
-    if (userContext && userContext.user) {
+  const router = useRouter();
+
+  function navigeTo(path: string) {
+    console.log(
+      "This is the currentPath: ",
+      router.pathname,
+      "\nThis is the target path: ",
+      path
+    );
+    if (path !== router.pathname) {
+      console.log(path);
+      router
+        .push(path)
+        .then((val) => {
+          if (val) {
+            console.log("Navigate to ", path);
+          } else {
+            console.log(val);
+          }
+        })
+        .catch((err) => console.log("error on push: ", err));
+    }
+  }
+
+  function returnCredentials() {
+    if (userContext.user) {
+      const balance = ethers.utils.formatUnits(userContext.user?.balance, 18);
       return (
-        <BsClipboard
-          title="Hesabı panoya kopyala!"
-          className="cursor-pointer -m-5 text-first"
-          onClick={copyAddrToClipboard}
-        />
+        <>
+          <span
+            title={balance}
+            className="italic mx-7 col-start-4 row-start-2  text-white"
+          >
+            ETH Bakiye: {balance.slice(0, 4)}...
+          </span>
+          <h3
+            onClick={copyAddrToClipboard}
+            className="italic col-start-3 row-start-2 cursor-pointer col-span-1 text-white"
+          >
+            Hesap: {userContext.user.address.slice(0, 16)}...
+          </h3>
+        </>
       );
     }
   }
   return (
-    <Navbar className="bg-third items-center gap-x-12 pr-8 shadow-md">
-      <Navbar.Start>
-        <Link href="/">
-          <h1 className="font-bold  ml-4 text-first cursor-pointer text-xl ">
-            Sansürsüz Sözlük
-          </h1>
-        </Link>
-      </Navbar.Start>
-      <Navbar.Center>
-        <div className="mx-5  p-0 flex items-center">
-          <h3 className="italic mx-7 text-first">
-            {userContext && userContext.user
-              ? `Hesap: ${userContext.user?.address}`
-              : ""}
-          </h3>
-          {clipboardCheck()}
-        </div>
-        <span
-          title={userContext?.user?.balance.toString() || ""}
-          className="italic mx-7  text-first"
-        >
-          {userContext && userContext.user
-            ? `ETH Bakiye: ${userContext.user.balance
-                .toString()
-                .slice(0, 4)}... `
-            : ""}
-        </span>
-      </Navbar.Center>
-      <Navbar.End>
-        {checkMetamaskButton()}
-        {newEntryButton()}
-      </Navbar.End>
-    </Navbar>
+    <div className="bg-second grid grid-cols-6 grid-rows-3  col-start-1 col-span-6 items-center gap-x-12  shadow-md">
+      <h1
+        onClick={() => navigeTo("/")}
+        className="font-bold col-start-1 row-start-2   text-center  text-white cursor-pointer text-2xl "
+      >
+        Sansürsüz Sözlük
+      </h1>
+      {returnCredentials()}
+      {checkMetamaskButton()}
+      {newEntryButton()}
+    </div>
   );
 };
 

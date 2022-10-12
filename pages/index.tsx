@@ -1,20 +1,11 @@
 import type { NextPage } from "next";
-import Head from "next/head";
 import { useState } from "react";
-import { Hero, Alert, Button } from "react-daisyui";
-import SozlukNavbar from "../components/navbar";
-import { IAccount } from "../types/interfaces";
 import { EAlerts } from "../types/enums";
-import { ethers } from "ethers";
-// Components
-import Dashboard from "../components/dashboard";
 
 const Home: NextPage = () => {
   // Alert field to inform users about actions.
   const [alertField, setAlertField] = useState(
-    <Alert className="w-full" status={"info"}>
-      Hoşgeldiniz, lütfen Metamask ile giriş yapın.
-    </Alert>
+    <div className="w-full">Hoşgeldiniz, lütfen Metamask ile giriş yapın.</div>
   );
 
   // Sets alert field proporties.
@@ -22,7 +13,7 @@ const Home: NextPage = () => {
     switch (alertType) {
       case EAlerts.NoMetaMask: {
         setAlertField(
-          <Alert status="warning" className="text-sm w-full">
+          <div className="text-sm w-full">
             {"Metamask yüklü değil."}
             <a
               className="text-blue-900 underline"
@@ -32,15 +23,15 @@ const Home: NextPage = () => {
             >
               {"Buraya tıklayarak indirebilirsiniz."}
             </a>
-          </Alert>
+          </div>
         );
         break;
       }
       case EAlerts.MetaMask: {
         setAlertField(
-          <Alert status="info" className="text-sm w-full">
+          <div className="text-sm w-full">
             {"Metamask yüklü. Yukarıdaki tuşa basarak giriş yapabilirsiniz."}
-          </Alert>
+          </div>
         );
         break;
       }
@@ -48,24 +39,19 @@ const Home: NextPage = () => {
   };
 
   return (
-    <div>
-      <Head>
+    <div className="row-start-2 row-span-4 col-start-1 col-span-5  text-white flex items-center justify-center">
+      <div>
         <title>Sansürsüz Sözlük</title>
         <meta name="description" content="Sansürsüz Sözlük" />
         <link rel="icon" href="/favicon.ico" />
-      </Head>
-      <main className="bg-third">
-        <Hero className="h-screen pl-44  overflow-hidden">
-          <Hero.Overlay />
-          <Hero.Content>
-            <div>
-              <h1 className="text-5xl my-5 text-first font-bold text-white">
-                {"Sansürsüz Sözlük"}
-              </h1>
-              {alertField}
-            </div>
-          </Hero.Content>
-        </Hero>
+      </div>
+      <main>
+        <div>
+          <h1 className="text-5xl my-5 text- font-bold text-">
+            {"Sansürsüz Sözlük"}
+          </h1>
+          {alertField}
+        </div>
       </main>
     </div>
   );

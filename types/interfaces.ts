@@ -4,7 +4,13 @@ export interface IAccount {
     address: string;
     chainId: number;
     balance: BigNumber;
+}
 
+
+export interface INavbarAccount {
+    address: string;
+    balance: BigNumber;
+    
 }
 
 export interface IContractDetails {
@@ -38,3 +44,9 @@ export interface IComment {
 export interface ICommentArray {
     comments: IComment[]
 }
+export interface IProps  {
+  title?: string;
+  children?: JSX.Element;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  className?: string 
+};

@@ -10,7 +10,10 @@ import { IAccount } from "./types/interfaces";
 type UserContextProviderProps = {
   children: ReactNode;
 };
-export const UserContext = createContext<IUserState | null>(null);
+export const UserContext = createContext<IUserState>({
+  setUser: () => {},
+  user: null,
+});
 
 interface IUserState {
   user: IAccount | null;
