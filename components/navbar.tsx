@@ -1,13 +1,10 @@
 import { NextPage } from "next";
-import { useContext, useEffect, useCallback, useMemo } from "react";
+import { useContext, useEffect, useCallback } from "react";
 import { UserContext } from "../UserContext";
-import { IAccount } from "../types/interfaces";
 import {
-  checkLocalStorage,
-  getAccountFromMetamask,
-  getLocalStorage,
-  removeMetamaskListener,
-  setLocalStorage,
+    checkIfAccountConnected,
+    getAccountFromMetamask, removeMetaMaskListener,
+
 } from "../functions";
 import { useRouter } from "next/router";
 import Button from "./Button";
@@ -16,63 +13,62 @@ import { ethers } from "ethers";
 const SozlukNavbar: NextPage = () => {
   function copyAddrToClipboard() {
     if (userContext && userContext.user) {
-      navigator.clipboard.writeText(userContext.user.address);
+      navigator.clipboard.writeText(userContext.user.address).then(
+      );
+
     }
   }
   const userContext = useContext(UserContext);
 
-  const getAccountDetails = useCallback(async () => {
-    if (!checkLocalStorage()) {
-      console.log("No local storage");
-      const account = await getAccountFromMetamask();
-      setLocalStorage(account);
-      return account;
-    } else {
-      console.log("There is a local storage.");
-      const account: IAccount = JSON.parse(getLocalStorage() as string);
-      return account;
-    }
-  }, []);
 
   function checkMetamaskButton() {
-    if (userContext && !userContext.user) {
+    if (!userContext.user) {
       return (
         <Button
           onClick={() => {
-            getAccountDetails()
-              .then((val) => {
-                if (val) {
-                  userContext.setUser(val);
-                }
-              })
-              .catch((err) => console.error("Metamask Button Error: ", err));
+              getAccountFromMetamask().then(account => {
+                  userContext.setUser(account);
+              }).catch(console.log);
+
           }}
           className="col-start-5 text-sm h-22 bg-blue-900 row-start-2 hover:bg-third "
         >
           <p>Metamask İle Giriş Yap</p>
         </Button>
-      );
+      )
     }
   }
 
-  const checkAccountChange = useCallback(() => {
-    window.ethereum.on("accountsChanged", (accounts: string[]) => {
-      if (!accounts[0]) {
-        userContext?.setUser(null);
-      }
-    });
-  }, [userContext]);
+
+    const checkAndConnect = useCallback(() => {
+        checkIfAccountConnected().then(isConnected => {
+            if(isConnected) {
+                getAccountFromMetamask().then(acc =>{
+                    userContext.setUser(acc);
+                }).catch(console.log)
+            }
+        }).catch(console.log)
+    }, [userContext.setUser]);
+
+  const metaListener = useCallback(() => {
+      window.ethereum.on("accountsChanged", (accounts: string[]) => {
+          if (!accounts[0]) {
+              userContext.setUser(null);
+          }
+      });
+
+  }, []);
+
 
   useEffect(() => {
-    console.log("Navbar Fired Up");
-    checkAccountChange();
-    return () => {
-      removeMetamaskListener();
-    };
-  }, [checkAccountChange]);
+      checkAndConnect();
+      metaListener();
+      return(() => {
+          removeMetaMaskListener();
+      })
+  }, []);
 
   function newEntryButton() {
-    console.log(userContext.user?.address);
     if (userContext.user) {
       return (
         <Button
@@ -93,14 +89,8 @@ const SozlukNavbar: NextPage = () => {
   const router = useRouter();
 
   function navigeTo(path: string) {
-    console.log(
-      "This is the currentPath: ",
-      router.pathname,
-      "\nThis is the target path: ",
-      path
-    );
+
     if (path !== router.pathname) {
-      console.log(path);
       router
         .push(path)
         .then((val) => {
@@ -136,10 +126,10 @@ const SozlukNavbar: NextPage = () => {
     }
   }
   return (
-    <div className="bg-second grid grid-cols-6 grid-rows-3  col-start-1 col-span-6 items-center gap-x-12  shadow-md">
+    <div className="bg-second grid grid-cols-6 grid-rows-3 h-[15vh] row-start-1 row-span-1 col-start-1 col-span-6 items-center gap-x-12  shadow-md">
       <h1
         onClick={() => navigeTo("/")}
-        className="font-bold col-start-1 row-start-2   text-center  text-white cursor-pointer text-2xl "
+        className="font-bold col-start-1 row-start-2 row-span-1   text-center  text-white cursor-pointer text-2xl "
       >
         Sansürsüz Sözlük
       </h1>

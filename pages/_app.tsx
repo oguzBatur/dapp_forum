@@ -2,28 +2,18 @@ import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import SozlukNavbar from "../components/navbar";
 import Dashboard from "../components/dashboard";
-import { UserContext, UserContextProvider } from "../UserContext";
-import { useEffect, useContext, useCallback } from "react";
-import { requestAccount } from "../functions";
+import {  UserContextProvider } from "../UserContext";
 
 function MyApp({ Component, pageProps }: AppProps) {
-  useEffect(() => {
-    console.log("Root Fired Up");
-    return () => {
-      console.log("Root unmounted.");
-    };
-  });
-
-  const userContext = useContext(UserContext);
-
-  const checkCurrentUser = useCallback(() => {}, []);
-
   return (
     <UserContextProvider>
-      <div className="grid h-screen grid-rows-6  grid-cols-6 bg-first">
+      <div className=" min-h-screen w-full flex flex-col bg-first">
         <SozlukNavbar />
-        <Dashboard />
-        <Component {...pageProps} />
+          <div className="flex min-h-[85vh] justify-end">
+              <Component {...pageProps} />
+              <Dashboard/>
+
+          </div>
       </div>
     </UserContextProvider>
   );

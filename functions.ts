@@ -28,41 +28,51 @@ export function sozlukLogger(value: any): any {
   return value;
 }
 
-export async function getAccountFromMetamask() {
+//// Account related logic
+export async function checkIfAccountConnected() {
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const signer = await provider.getSigner();
   try {
-    if (await requestAccount()) {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
-      const address = await signer.getAddress();
-      const balance = await signer.getBalance();
-      const chainId = await signer.getChainId();
-      const acc: IAccount = {
-        address,
-        balance,
-        chainId,
-      };
-      return acc;
-    }
-  } catch (error) {
-    if (error instanceof Error) {
-      console.log(
-        "Error has occured when trying to get metamask account: ",
-        error
-      );
-    }
-  }
-}
-
-// Get account information from metamask. if there is  an account, return true. Otherwise return false.
-export async function requestAccount() {
-  const req = window.ethereum.request?.({ method: "eth_requestAccounts" });
-  if (req !== undefined) {
+    await signer.getAddress();
     return true;
-  } else {
+  } catch (error) {
+    console.log("Error when trying to get address", error);
     return false;
   }
 }
 
+export async function getAccountFromMetamask() {
+  try {
+    await requestAccount();
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const address = await signer.getAddress();
+    const balance = await signer.getBalance();
+    const chainId = await signer.getChainId();
+    const acc: IAccount = {
+      address,
+      balance,
+      chainId,
+    };
+    return acc;
+  } catch (error) {}
+}
+
+// Get account information from metamask. if there is  an account, return true. Otherwise return false.
+async function requestAccount() {
+  try {
+    const req = await window.ethereum.request?.({
+      method: "eth_requestAccounts",
+    });
+    if (req !== undefined) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {}
+}
+
+// Create a post with the given title and description.
 export async function createPost(title: string, description: string) {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   const signer = provider.getSigner();
@@ -79,7 +89,9 @@ export async function createPost(title: string, description: string) {
   return postCount;
 }
 
-export async function getComments(postId: number) {
+// Comment Functions
+//commentOnPost(uint _postId, string memory _comment)
+export async function commentOnPost(postId: number, comment: string) {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   const signer = provider.getSigner();
 
@@ -89,51 +101,71 @@ export async function getComments(postId: number) {
     signer
   );
 
-  const commentIds = await contract.getAllComments(postId);
-  console.log(commentIds);
+  await contract.commentOnPost(postId, comment);
 }
 
-async function getComment(commentId: number) {}
+export async function getComments(postId: number) {
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+  const contract = new ethers.Contract(
+    ForumContract.address,
+    ForumContract.json.abi,
+    provider
+  );
+
+  const commentIds = await contract.getAllComments(postId);
+  if (commentIds) {
+    return commentIds;
+  }
+}
+
+export async function getComment(commentId: number) {
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+  const contract = new ethers.Contract(
+    ForumContract.address,
+    ForumContract.json.abi,
+    provider
+  );
+  const comment = await contract.getComment(commentId);
+  if (comment) {
+    return comment;
+  }
+}
 
 export async function getPostCount() {
   try {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
 
     const contract = new ethers.Contract(
       ForumContract.address,
       ForumContract.json.abi,
-      signer
+      provider
     );
-    const postCount = ethers.utils.formatUnits(
-      await contract.getPostCount(),
-      0
-    );
-    return postCount;
+
+    return ethers.utils.formatUnits(await contract.getPostCount(), 0);
   } catch (error) {
     if (error instanceof Error) {
       console.log("Error when trying to get post count: ", error.message);
     }
   }
 }
+
 export async function getPost(postId: number) {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
-  const signer = provider.getSigner();
 
   const contract = new ethers.Contract(
     ForumContract.address,
     ForumContract.json.abi,
-    signer
+    provider
   );
 
-  const post = await contract.getPost(postId);
-
-  return post;
+  return await contract.getPost(postId);
 }
 
 export const checkLocalStorage = (): boolean => {
   const address = localStorage.getItem("_user-acc");
-  return address ? true : false;
+  return !!address;
 };
 export const setLocalStorage = (acc: IAccount) => {
   localStorage.setItem(
@@ -154,9 +186,9 @@ export const getLocalStorage = () => {
   }
 };
 
-export async function listenMetamask(): Promise<{
+export function metaMaskListener(): {
   accountDisconnected: boolean;
-}> {
+} {
   window.ethereum.on("accountsChanged", (accounts: string[]) => {
     console.log("Accounts has been changed: ", accounts);
     if (!accounts[0]) {
@@ -172,7 +204,7 @@ export async function listenMetamask(): Promise<{
   return { accountDisconnected: false };
 }
 
-export async function removeMetamaskListener() {
+export function removeMetaMaskListener() {
   window.ethereum.removeListener("accountsChanged", (acc: any) => {
     console.log(acc);
   });

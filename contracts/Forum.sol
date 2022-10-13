@@ -45,6 +45,7 @@ contract Forum {
     function commentOnPost(uint _postId, string memory _comment) external {
         require(_postId < postCount && _postId >= 0); // Be sure that postid exists and makes sense.
         require(bytes(_comment).length > 0); // Be sure that comment is not empty.
+        require(bytes(_comment).length < 40);
 
         // Create the comment first.
         comments[commentCount] = Comment(
